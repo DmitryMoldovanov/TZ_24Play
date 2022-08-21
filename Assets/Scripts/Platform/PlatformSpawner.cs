@@ -8,7 +8,7 @@ namespace Assets.Scripts.Platform
     public class PlatformSpawner : MonoBehaviour
     {
         [SerializeField] private PlatformController[] _platformControllerPrefabs;
-        [SerializeField] private AttachableCube _attachableCubePrefab;
+        [SerializeField] private AttachableCube _attachableAttachableCubePrefab;
         [SerializeField] private int _spawnPlatformsOnGameStart;
 
         private ObjPool<PlatformController> _platformsPool;
@@ -27,9 +27,10 @@ namespace Assets.Scripts.Platform
                 true);
 
             _attachableCubesPool = new ObjPool<AttachableCube>(
-                _attachableCubePrefab,
+                _attachableAttachableCubePrefab,
                 transform,
-                _spawnPlatformsOnGameStart * 3, true);
+                _spawnPlatformsOnGameStart * _platformControllerPrefabs.Length,
+                true);
 
             _platformIndex = 0;
         }

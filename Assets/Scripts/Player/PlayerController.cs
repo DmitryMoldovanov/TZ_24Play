@@ -1,39 +1,41 @@
+﻿using System;
 using Assets.Scripts.Cube;
 using Assets.Scripts.Interfaces;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Assets.Scripts.Player
 {
     public class PlayerController : MonoBehaviour
     {
-        [SerializeField] private PlayerModel _playerModel;
-        [SerializeField] private MainCube _mainCube;
+        public event Action OnPlayerDeathEvent;
+
+        [SerializeField] private Rigidbody _rigidbody;
+        [SerializeField] private Animator _playerAnimator;
         [SerializeField] private ParticleSystem _cubeAttachmentParticles;
-        [SerializeField] private Transform _playerPrefab;
+        [SerializeField] private PlayerModel _playerModel;
         [SerializeField] private CubeHolder _cubeHolder;
 
         private IInputHandler _inputHandler;
-        private Transform _transform;
-        private Transform _mainCubeTransform;
-        private Animator _animator;
-        private Vector3 _position;
-        private float _x;
+        private CollisionCaster _collisionCaster;
 
-        public MainCube PlayerCube => _mainCube;
+        private Transform _transform;
+        private Vector3 _position;
+        private float _inputX;
 
         #region MONO
+
         void Awake()
         {
             _transform = transform;
-            _animator = _playerPrefab.transform.GetComponent<Animator>();
-            _mainCubeTransform = _mainCube.transform;
             _inputHandler = new MobileTouchInput(_playerModel.HorizontalSpeed);
+            _collisionCaster =
+                new CollisionCaster(_transform, _playerModel.CollisionDistance, _playerModel.CollisionMask);
             _position = Vector3.forward;
         }
 
         private void OnEnable()
         {
+            _rigidbody.isKinematic = false;
             _cubeHolder.OnCubeAttachEvent += AlignPlayerPosition;
         }
 
@@ -43,7 +45,7 @@ namespace Assets.Scripts.Player
         }
 
         #endregion
-        
+
         void Update()
         {
             ReadInput();
@@ -51,38 +53,53 @@ namespace Assets.Scripts.Player
 
         void FixedUpdate()
         {
-            Move();
+            if (!_collisionCaster.HasCollided())
+            {
+                Move();
+            } 
+            else OnPlayerDeathEvent?.Invoke();
         }
 
         private void Move()
         {
-            _transform.position = new Vector3(
+            _rigidbody.MovePosition(new Vector3(
                 _position.x,
                 _transform.position.y,
-                _transform.position.z + _playerModel.SurfSpeed * Time.fixedDeltaTime);
+                _transform.position.z + _position.z * _playerModel.SurfSpeed * Time.fixedDeltaTime));
         }
 
         private void ReadInput()
         {
-            _x = _inputHandler.GetHorizontalInputData();
-            _position.x = Mathf.Clamp(_transform.position.x + _x, _playerModel.LeftBorderLimit, _playerModel.RightBorderLimit);
+            _inputX = _inputHandler.GetHorizontalInputData();
+
+            _position.x = Mathf.Clamp(
+                _transform.position.x + (_inputX * _playerModel.HorizontalSpeed * Time.fixedDeltaTime),
+                _playerModel.LeftBorderLimit,
+                _playerModel.RightBorderLimit);
         }
 
         private void AlignPlayerPosition(float y)
         {
             PlayJumpAnimation();
-            
             _cubeAttachmentParticles.Play();
 
-            _mainCubeTransform.localPosition = new Vector3(
-                _mainCubeTransform.localPosition.x,
-                _mainCubeTransform.localPosition.y + y,
-                _mainCubeTransform.localPosition.z);
+            _transform.position = new Vector3(
+                _rigidbody.position.x,
+                _rigidbody.position.y + y,
+                _rigidbody.position.z);
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.transform.TryGetComponent(out IAttachable attachable))
+            {
+                attachable.Attach(_cubeHolder);
+            }
         }
 
         private void PlayJumpAnimation()
         {
-            _animator.SetTrigger("Jump");
+            _playerAnimator.SetTrigger("Jump");
         }
     }
 }

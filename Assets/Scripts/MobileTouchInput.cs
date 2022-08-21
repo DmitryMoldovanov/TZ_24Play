@@ -8,13 +8,13 @@ namespace Assets.Scripts
         private readonly float _speed;
         private Touch _touch;
         private float _touchValue;
-        private Vector3 _position;
+        private float _x;
 
         public MobileTouchInput(float speed)
         {
             _speed = speed;
             _touchValue = 0f;
-            _position = Vector3.zero;
+            _x = 0f;
         }
 
         public float GetHorizontalInputData()
@@ -25,13 +25,13 @@ namespace Assets.Scripts
 
                 if (_touch.phase == TouchPhase.Moved)
                 {
-                    _touchValue = _touch.deltaPosition.x * _speed * Time.fixedDeltaTime;
-                    _position.x += _touchValue;
+                    _touchValue = _touch.deltaPosition.x;
+                    _x += _touchValue;
                 }
             }
-            else _position.x = 0f;
+            else _x = 0f;
 
-            return _position.x;
+            return _x;
         }
     }
 }

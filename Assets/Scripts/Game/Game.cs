@@ -6,44 +6,33 @@ namespace Assets.Scripts.Game
 {
     public class Game : MonoBehaviour
     {
-        [SerializeField] private PlayerController _playerPrefab;
+        [SerializeField] private PlayerController _player;
         
         [Space]
         [Header("UI")]
         [SerializeField] private StartGameMenu _startGameMenu;
         [SerializeField] private EndOfGameMenu _endOfGameMenu;
 
-
-        void Awake()
-        {
-            
-        }
-
         void OnEnable()
         {
-            _playerPrefab.PlayerCube.OnPlayerDeathEvent += EndOfGame;
+            _player.OnPlayerDeathEvent += EndOfGame;
         }
 
         void OnDisable()
         {
-            _playerPrefab.PlayerCube.OnPlayerDeathEvent -= EndOfGame;
-        }
-
-        void Start()
-        {
-
+            _player.OnPlayerDeathEvent -= EndOfGame;
         }
 
         public void StartGame()
         {
             _startGameMenu.Disable();
-            _playerPrefab.enabled = true;
+            _player.enabled = true;
         }
 
         private void EndOfGame()
         {
             _endOfGameMenu.Enable();
-            _playerPrefab.enabled = false;
+            _player.enabled = false;
         }
     }
 }

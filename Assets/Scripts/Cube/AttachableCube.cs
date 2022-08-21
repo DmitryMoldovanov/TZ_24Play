@@ -5,22 +5,26 @@ using UnityEngine;
 
 namespace Assets.Scripts.Cube
 {
-    [RequireComponent(typeof(Rigidbody))]
     public class AttachableCube : PooledObject<AttachableCube>, IAttachable
     {
-        [SerializeField] private bool _attached;
+        [SerializeField] private bool _isAttached;
         [SerializeField] private CubeHolder _cubeHolder;
-        [SerializeField] private LayerMask _layerMask;
+        [SerializeField] private LayerMask _layerToDeAttach;
         [SerializeField] private float _collisionLineLength;
 
         private readonly int _resetCubeDelayInSeconds = 3;
 
+        private CollisionCaster _collisionCaster;
         private Transform _transform;
         private float _colliderYBounds;
+        private bool _enteredCollision;
+
+        public bool EnteredCollision => _enteredCollision;
 
         void Awake()
         {
             _transform = transform;
+            _collisionCaster = new CollisionCaster(_transform, _collisionLineLength, _layerToDeAttach);
             _colliderYBounds = GetComponent<BoxCollider>().size.y;
         }
 
@@ -32,10 +36,7 @@ namespace Assets.Scripts.Cube
 
         private void FixedUpdate()
         {
-            if (_attached && Physics.Linecast(
-                    _transform.position,
-                    _transform.position + new Vector3(0, 0, _collisionLineLength),
-                    _layerMask.value))
+            if (_isAttached && _collisionCaster.HasCollided())
             {
                 DeAttach();
             }
@@ -43,9 +44,10 @@ namespace Assets.Scripts.Cube
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collision.transform.TryGetComponent(out AttachableCube attachable))
+            if (_isAttached)
             {
-                if (_attached)
+                if (collision.transform.TryGetComponent(out IAttachable attachable) &&
+                    !attachable.EnteredCollision)
                 {
                     attachable.Attach(_cubeHolder);
                 }
@@ -54,23 +56,16 @@ namespace Assets.Scripts.Cube
 
         public void Attach(CubeHolder cubeHolder)
         {
-            if (!_attached)
+            if (!_isAttached)
             {
-                _attached = true;
+                _isAttached = true;
+                _enteredCollision = true;
                 _cubeHolder = cubeHolder;
 
-                _cubeHolder.OnCubeAttached(_transform.localScale.y + .1f);
+                _cubeHolder.OnCubeAttached(_colliderYBounds);
                 _transform.parent = _cubeHolder.transform;
                 SetPosition(_cubeHolder);
             }
-        }
-
-        public void DeAttach()
-        {
-            _attached = false;
-            _transform.parent = null;
-
-            ResetObject();
         }
 
         private void SetPosition(CubeHolder cubeHolder)
@@ -78,20 +73,24 @@ namespace Assets.Scripts.Cube
             int childAmount = cubeHolder.transform.childCount;
 
             _transform.localPosition = new Vector3(
-                0f,
-                _colliderYBounds * childAmount,
-                0f);
+                0,
+                -1f * childAmount,
+                0);
         }
 
-        void OnDrawGizmos()
+        public void DeAttach()
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, 0, _collisionLineLength));
+            _cubeHolder.OnCubeDeAttached();
+            _isAttached = false;
+            _transform.parent = null;
+
+            ResetObject();
         }
 
         protected override async void ResetObject()
         {
             await Task.Delay(_resetCubeDelayInSeconds * 1000);
+            _enteredCollision = false;
 
             ReturnToPool(this);
         }

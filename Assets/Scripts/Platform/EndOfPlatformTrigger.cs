@@ -1,6 +1,6 @@
 using System;
-using Assets.Scripts.Cube;
 using Assets.Scripts.Interfaces;
+using Assets.Scripts.Player;
 using UnityEngine;
 
 namespace Assets.Scripts.Platform
@@ -25,7 +25,7 @@ namespace Assets.Scripts.Platform
         {
             if (_triggered == false)
             {
-                if (collider.transform.TryGetComponent(out MainCube mainCube) ||
+                if (collider.transform.TryGetComponent(out PlayerController player) ||
                     collider.transform.TryGetComponent(out IAttachable attachable))
                 {
                     _triggered = true;

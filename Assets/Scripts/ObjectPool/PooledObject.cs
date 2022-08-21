@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Assets.Scripts.ObjectPool
@@ -11,18 +12,40 @@ namespace Assets.Scripts.ObjectPool
 
         public void SetPool(ObjectPool<T> objectPool) => _pool = objectPool;
 
-        public void ReturnToPool(T obj) => _pool.Release(obj);
+        public void ReturnToPool(T obj)
+        {
+            if (_pool is null)
+            {
+                Destroy(gameObject);
+            }
+            else
+                _pool.Release(obj);
+        }
 
         public void Enable()
         {
-            if (gameObject is not null)
+            try
+            {
                 gameObject.SetActive(true);
+            }
+            catch (MissingReferenceException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public void Disable()
         {
-            if (gameObject is not null)
-                gameObject.SetActive(false);
+            try
+            {
+                gameObject.SetActive(true);
+            }
+            catch (MissingReferenceException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         protected abstract void ResetObject();

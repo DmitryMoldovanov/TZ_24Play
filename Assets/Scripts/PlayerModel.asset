@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f18d49dcd5e60e140b283b4ea83a9a5a, type: 3}
   m_Name: PlayerModel
   m_EditorClassIdentifier: 
-  leftBorderLimit: -2.1
-  rightBorderLimit: 2.1
-  surfSpeed: 7
-  horizontalSpeed: 0.1
+  _leftBorderLimit: -2.1
+  _rightBorderLimit: 2.1
+  _surfSpeed: 15
+  _horizontalSpeed: 0.2
+  _collisionMask:
+    serializedVersion: 2
+    m_Bits: 128
+  _collisionDistance: 0.3

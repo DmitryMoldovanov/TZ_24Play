@@ -1,5 +1,4 @@
 ﻿using System;
-using Assets.Scripts.Interfaces;
 using UnityEngine;
 
 namespace Assets.Scripts.Cube
@@ -8,7 +7,10 @@ namespace Assets.Scripts.Cube
     {
         public event Action<float> OnCubeAttachEvent;
 
+        [SerializeField] private CameraShake _camera;
+
         private Transform _transform;
+        private bool _isShakingCamera;
 
         private void Awake()
         {
@@ -18,6 +20,16 @@ namespace Assets.Scripts.Cube
         public void OnCubeAttached(float addValueToPlayerY)
         {
             OnCubeAttachEvent?.Invoke(addValueToPlayerY);
+        }
+
+        public async void OnCubeDeAttached()
+        {
+            if (!_isShakingCamera)
+            {
+                _isShakingCamera = true;
+                await _camera.ShakeCamera();
+                _isShakingCamera = false;
+            }
         }
     }
 }
