@@ -15,12 +15,7 @@ namespace Assets.Scripts.Platform
         {
             _triggered = false;
         }
-
-        void OnDisable()
-        {
-            _triggered = true;
-        }
-
+        
         private void OnTriggerEnter(Collider collider)
         {
             if (_triggered == false)

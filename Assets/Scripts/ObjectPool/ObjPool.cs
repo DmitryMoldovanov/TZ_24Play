@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Assets.Scripts.ObjectPool
@@ -23,12 +24,12 @@ namespace Assets.Scripts.ObjectPool
                 CreateObjectFromArray,
                 OnGetFromPool,
                 OnReturnToPool,
-                null, false,
+                OnDestroyAction, false,
                 startingPoolSize);
 
             if (preCreateObjects) PreCreateObjects(startingPoolSize);
         }
-        
+
         public ObjPool(T prefab, Transform poolParent, int startingPoolSize, bool preCreateObjects)
         {
             _prefab = prefab;
@@ -39,7 +40,7 @@ namespace Assets.Scripts.ObjectPool
                 CreateObject,
                 OnGetFromPool,
                 OnReturnToPool,
-                null, false,
+                OnDestroyAction, false,
                 startingPoolSize);
 
             if (preCreateObjects) PreCreateObjects(startingPoolSize);
@@ -58,13 +59,13 @@ namespace Assets.Scripts.ObjectPool
 
         private T CreateObjectFromArray()
         {
-            int randomPrefab = Random.Range(0, _prefabs.Length);
-            var obj = Object.Instantiate(_prefabs[randomPrefab], _poolParent);
+            int randomIndex = Random.Range(0, _prefabs.Length);
+            var obj = Object.Instantiate(_prefabs[randomIndex], _poolParent);
             obj.SetPool(_pool);
             obj.ReturnToPool(obj);
             return obj;
         }
-        
+
         private T CreateObject()
         {
             var obj = Object.Instantiate(_prefab, _poolParent);
@@ -75,12 +76,23 @@ namespace Assets.Scripts.ObjectPool
 
         private void OnGetFromPool(T obj)
         {
-            obj.Enable();
+            if (obj != null)
+            {
+                obj.Enable();
+            }
         }
 
         private void OnReturnToPool(T obj)
         {
-            obj.Disable();
+            if (obj != null)
+            {
+                obj.Disable();
+            }
+        }
+
+        private void OnDestroyAction(T obj)
+        {
+            obj.Destroy();
         }
     }
 }

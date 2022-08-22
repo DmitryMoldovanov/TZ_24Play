@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Assets.Scripts.ObjectPool
@@ -24,28 +23,17 @@ namespace Assets.Scripts.ObjectPool
 
         public void Enable()
         {
-            try
-            {
-                gameObject.SetActive(true);
-            }
-            catch (MissingReferenceException e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            gameObject.SetActive(true);
         }
 
         public void Disable()
         {
-            try
-            {
-                gameObject.SetActive(true);
-            }
-            catch (MissingReferenceException e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            gameObject.SetActive(false);
+        }
+
+        public void Destroy()
+        {
+            Destroy(this);
         }
 
         protected abstract void ResetObject();

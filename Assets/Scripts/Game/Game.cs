@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Player;
+﻿using System.Threading.Tasks;
+using Assets.Scripts.Player;
 using Assets.Scripts.UI;
 using UnityEngine;
 
